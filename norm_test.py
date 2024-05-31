@@ -35,13 +35,22 @@ def chisquare_test(data, plot=True):
         plt.show()
     
     return statistic, pvalue
-    
+
+def ks_test(data):
+    mu = np.mean(data)
+    std = np.std(data)
+    scaled_data = (data - mu)/std
+    return sps.kstest(scaled_data, sps.norm.cdf)
 
 def main():
     #data = sps.norm.rvs(size=100, loc=12, scale=13)   
     #data = sps.norm.rvs(size=10000)
-    data = sps.norm.rvs(size=1000)
+    data = sps.norm.rvs(size=100, loc=14, scale=10)
     statistic, pvalue = chisquare_test(data, plot=False)
+    print(f'Statistic: {statistic:.2f}, pvalue: {pvalue:.2f}')
+
+    print('\nKstest')
+    statistic, pvalue = ks_test(data)
     print(f'Statistic: {statistic:.2f}, pvalue: {pvalue:.2f}')
 
 if __name__ == '__main__':
