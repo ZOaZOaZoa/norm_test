@@ -57,8 +57,8 @@ def main():
         for i, col in enumerate(chunk):
             k = get_col_no_blank(df, col)
             plt.subplot(2,2, i+1)
-            chisquare_pvalue, ks_pvalue = norm_test.plot_fit(k, col, isSubplot=True)
-            print(f'{col:<30} Критерий пирсона: {chisquare_pvalue:<8.3f} Критерий Колмогорова-Смирнова: {ks_pvalue:<8.3f}')
+            chisquare_pvalue, ks_pvalue, beta_ks_pvalue = norm_test.plot_fit(k, col, isSubplot=True)
+            print(f'{col:<30} Критерий пирсона: {chisquare_pvalue:<8.3f} Критерий К-С: Нормальное - {ks_pvalue:<8.3f}, Бета - {beta_ks_pvalue:<8.3f}')
         plt.show()
         print()
 
