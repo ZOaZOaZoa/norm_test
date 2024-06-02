@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from math import ceil
+from datetime import datetime
 
 def get_col_no_blank(df, col_name):
     k = pd.Series(df[df[col_name].apply(lambda x: type(x) in [int, np.int64, float, np.float64])][col_name]).values.astype(np.float64)
@@ -50,17 +51,32 @@ def main():
     df = xl.parse(sheet)
     
     print('Найдены следующие столбцы:', *df.columns)
-    print('Строим графики. Если pvalue > 0.05, значит критерий на нормальность выполняется')
+    print('Строим графики. Если pvalue > 0.05, значит критерий согласия выполняется')
     col_chunks = np.array_split(df.columns, ceil(len(df.columns) / 4))
+
+    saveFolder = 'png\\' + str(datetime.now().strftime("%d.%m.%Y %H-%M-%S"))
+    if not os.path.isdir('png'):
+        os.mkdir('png')
+    if not os.path.isdir(saveFolder):
+        os.mkdir(saveFolder)
+
+    plt.rcParams.update({'font.size': 14})
+
     for k, chunk in enumerate(col_chunks):
         print(f'{k+1} график из {len(col_chunks)}')
         for i, col in enumerate(chunk):
-            k = get_col_no_blank(df, col)
+            vals = get_col_no_blank(df, col)
             plt.subplot(2,2, i+1)
-            stat_box = norm_test.plot_fit(k, col, isSubplot=True)
+            stat_box = norm_test.plot_fit(vals, col, isSubplot=True)
             print(stat_box.pvals_info(col))
-        plt.show()
-        print()
+        plt.subplots_adjust(hspace=0.3, left=0.2, right=0.8)
+        fig = plt.gcf()
+        fig.set_size_inches((25, 12), forward=False)
+        fig.savefig(f'{saveFolder}\\Figure_{k+1}.png', bbox_inches='tight', dpi=150)
+        plt.close()
+    
+    print(f'Построенные графики сохранены в: {os.getcwd()}\\{saveFolder}')
+    input('Чтобы выйти из программы нажмите ENTER...')
 
 if __name__ == '__main__':
     main()

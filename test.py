@@ -1,7 +1,16 @@
-import norm_test
 import scipy.stats as sps
 from random import random
 from tqdm import tqdm
+import numpy as np
+
+def chisquare_test(data):
+    return sps.normaltest(data)
+
+def ks_test(data):
+    mu = np.mean(data)
+    std = np.std(data)
+    scaled_data = (data - mu)/std
+    return sps.kstest(scaled_data, 'norm', [mu, std])
 
 def test(data_generator):
     correct_pierson = 0
@@ -9,11 +18,11 @@ def test(data_generator):
     total = 100
     for i in tqdm(range(total), leave=False):
         data = data_generator()
-        statistic, pvalue = norm_test.chisquare_test(data)
+        statistic, pvalue = chisquare_test(data)
         if pvalue >= 0.05:
             correct_pierson += 1
         
-        statistic, pvalue = norm_test.ks_test(data)
+        statistic, pvalue = ks_test(data)
         if pvalue >= 0.05:
             correct_ks += 1
 
@@ -77,12 +86,12 @@ print()
 
 """ Типовой вывод
 1. Нормальные распределения. Объём выборки 100
-Критерий Пирсона:                  91/100 раз критерий выполняется
-Критерий Колмогорова-Смирнова:     100/100 раз критерий выполняется
+Критерий Пирсона:                  95/100 раз критерий выполняется
+Критерий Колмогорова-Смирнова:     95/100 раз критерий выполняется
 
 2. Экспоненциальные распределения. Объём выборки 100
 Критерий Пирсона:                  0/100 раз критерий выполняется
-Критерий Колмогорова-Смирнова:     8/100 раз критерий выполняется
+Критерий Колмогорова-Смирнова:     0/100 раз критерий выполняется
 
 3. Экспоненциальные распределения. Объём выборки 1000
 Критерий Пирсона:                  0/100 раз критерий выполняется
@@ -90,7 +99,7 @@ print()
 
 4. Равномерные распределения. Объём выборки 100
 Критерий Пирсона:                  0/100 раз критерий выполняется
-Критерий Колмогорова-Смирнова:     8/100 раз критерий выполняется
+Критерий Колмогорова-Смирнова:     0/100 раз критерий выполняется
 
 5. Равномерные распределения. Объём выборки 1000
 Критерий Пирсона:                  0/100 раз критерий выполняется

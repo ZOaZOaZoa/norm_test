@@ -1,6 +1,7 @@
 import scipy.stats as sps
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 class PDFNormal:
@@ -63,20 +64,15 @@ def plot_fit(data, title="", isSubplot=False):
 
     stat_box.testHypotheses(expected_normal, expected_beta)
 
-    #Теоретическое распределение
-    x = np.linspace(min(data), max(data), 100)
-    plt.plot(x, expected_normal.pdf(x), 'k--', label='Теоретическая\nподгонка')
     
     #Диаграмма накопленных частот
-    (observed, bins, _) = plt.hist(data, bins = round(1 + 3.2*np.log10(len(data))), density=True, label='Наблюдения')
+    sns.histplot(data, bins = round(1 + 3.2*np.log10(len(data))), stat='density', label='Наблюдения')
 
-    bin_centers = [ (bins[i] + bins[i+1])/2 for i in range(len(bins) - 1) ]
-    bin_width = bins[1] - bins[0]
-
-    #Ожидаемая диаграмма накопленных частот
-    expected_hist = np.array([ expected_normal.pdf(bin_c) for bin_c in bin_centers ])
+    #Теоретические подгонки
+    x = np.linspace(min(data), max(data), 100)
+    plt.plot(x, expected_normal.pdf(x), 'k--', label='Теоретическая\nподгонка $N(\mu, \sigma)$')
     plt.plot(x, expected_beta.pdf(x), 'r--', label='Теоретическая\nподгонка $B(\\alpha, \\beta)$')
-    plt.bar(bin_centers, height=expected_hist, width=0.4*bin_width, color='orange', label='Ожидаемое')
+
     plt.legend()
     plt.title(f"{title}\nКритерий Пирсона pvalue - {stat_box.pvalues['chisquare']:.3f}\nКритерий К-С Нормальное-pvalue - {stat_box.pvalues['norm_ks']:.3f} Бета-pvalue - {stat_box.pvalues['beta_ks']:.3f}")
     if not isSubplot:
