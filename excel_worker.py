@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import os
 from math import ceil
 from datetime import datetime
-from scipy.special import betaincinv
+from scipy.special import betaincinv, betainc
 
 def get_col_no_blank(df, col_name):
     '''Убирает из серии NaN и нулевые значения'''
@@ -14,6 +14,11 @@ def get_col_no_blank(df, col_name):
     k = k[k!=0]
 
     return k
+
+def round_down(a, dig: int):
+    factor = 10 ** (-dig)
+    return a // factor * factor
+
 
 def get_excel_data():
     while True:
@@ -94,15 +99,16 @@ def test_distribution_type(df):
     input("Для выхода из программы нажмите Enter...")
 
 def calc_quantiles_beta(df):
-    print('Первые три считаем следующими столбцами: название, значение мат. ожидания, значение дисперсии')
+    print('Первые три считаем следующими столбцами: название, значение мат. ожидания, значение СКО')
     column = df.columns[0]
     m_col = df.columns[1]
-    var_col = df.columns[2]
-    data_df = df[[column, m_col, var_col]]
+    std_col = df.columns[2]
+    data_df = df[[column, m_col, std_col]]
 
     #Расчёт альфа бета
     m = df[[m_col]].values
-    var = df[[var_col]].values
+    std = df[[std_col]].values
+    var = std * std
     r = -(m ** 2 - m + var)/var
     alpha = m * r
     beta = (1-m) * r
@@ -123,9 +129,20 @@ def calc_quantiles_beta(df):
         except ValueError:
             print(f'Получено не число! Введите число от 0 до 1. Получено {user_input}.')
 
-    protocol_columns = ['Название', 'Мат. ожидание', 'Дисперсия', 'Альфа', 'Бета', f'Квантиль{probability}']    
+    protocol_columns = ['Название', 'Мат. ожидание', 'СКО', 'Дисперсия', 'Альфа', 'Бета', f'Квантиль{probability}']    
     quantiles = betaincinv(alpha, beta, probability)
-    protocol = pd.DataFrame(np.c_[data_df.values, alpha, beta, quantiles], columns=protocol_columns)
+
+    steps_start = min(round_down(quantiles, 2)).item()
+    steps = np.linspace( steps_start, 0.99, round( (1-steps_start)*100))
+    probs_days = []
+    for step in steps:
+        protocol_columns += [f'Значение{round(step,2)} превышение, %',f'Значение{round(step,2)} превышение, дней/год']
+        prob = 1 - betainc(alpha, beta, step)
+        days = 365 * prob
+        probs_days.append(prob*100)
+        probs_days.append(days)
+
+    protocol = pd.DataFrame(np.c_[data_df.values, var, alpha, beta, quantiles, *probs_days], columns=protocol_columns)
     
     cur_datetime = datetime.now().strftime("%d.%m.%Y %H-%M-%S")
     if not os.path.isdir('protocol'):

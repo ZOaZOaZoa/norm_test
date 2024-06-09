@@ -1,7 +1,7 @@
 import scipy.stats as sps
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
+from seaborn import histplot
 
 
 class PDFNormal:
@@ -66,7 +66,7 @@ def plot_fit(data, title="", isSubplot=False):
 
     
     #Диаграмма накопленных частот
-    sns.histplot(data, bins = round(1 + 3.2*np.log10(len(data))), stat='density', label='Наблюдения')
+    histplot(data, bins = round(1 + 3.2*np.log10(len(data))), stat='density', label='Наблюдения')
 
     #Теоретические подгонки
     x = np.linspace(min(data), max(data), 100)
@@ -79,14 +79,3 @@ def plot_fit(data, title="", isSubplot=False):
         plt.show()
     
     return stat_box
-
-
-def main():
-    #data = sps.norm.rvs(size=100, loc=12, scale=13)   
-    #data = sps.norm.rvs(size=10000)
-    data = sps.beta.rvs(44, 3.5, size=1000)
-    plot_fit(data)
-
-
-if __name__ == '__main__':
-    main()
